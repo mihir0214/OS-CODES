@@ -1,0 +1,100 @@
+#include <stdio.h>
+
+int main()
+{
+    int pages[50], frames[10], last_used[10];
+    int n, f, i, j;
+    int faults = 0, hits = 0;
+    int found, min_index, lru_frame;
+
+    printf("Enter number of pages (Max 50): ");
+    scanf("%d", &n);
+
+    printf("Enter the page reference string: ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &pages[i]);
+
+    printf("Enter number of frames (Max 10): ");
+    scanf("%d", &f);
+
+    for (i = 0; i < f; i++) 
+    {
+        frames[i] = -1;
+        last_used[i] = 0;
+    }
+
+    printf("\nPage\tFrames\t\tStatus\n");
+
+    for (i = 0; i < n; i++)
+    {
+        found = 0;
+
+        // Check if page is already present (Hit)
+        for (j = 0; j < f; j++)
+        {
+            if (frames[j] == pages[i])
+            {
+                found = 1;
+                last_used[j] = i; // Update the recent access timestamp
+                break;
+            }
+        }
+
+        // Handle Page Fault
+        if (!found)
+        {
+            lru_frame = -1;
+
+            // Step 1: Check if there's any completely empty frame available first
+            for (j = 0; j < f; j++)
+            {
+                if (frames[j] == -1)
+                {
+                    lru_frame = j;
+                    break;
+                }
+            }
+
+            // Step 2: If frames are completely full, find the Least Recently Used frame
+            if (lru_frame == -1)
+            {
+                min_index = last_used[0];
+                lru_frame = 0;
+                
+                for (j = 1; j < f; j++)
+                {
+                    if (last_used[j] < min_index)
+                    {
+                        min_index = last_used[j];
+                        lru_frame = j;
+                    }
+                }
+            }
+
+            // Replace the target frame layout
+            frames[lru_frame] = pages[i];
+            last_used[lru_frame] = i; // Set time stamp for new page
+            faults++;
+        }
+        else
+        {
+            hits++;
+        }
+
+        // Display current visualization state
+        printf("%d\t", pages[i]);
+        for (j = 0; j < f; j++)
+        {
+            if (frames[j] == -1)
+                printf("- ");
+            else
+                printf("%d ", frames[j]);
+        }
+        printf("\t%s\n", found ? "Hit" : "Page Fault");
+    }
+
+    printf("\nTotal Page Faults = %d\n", faults);
+    printf("Total Page Hits = %d\n", hits);
+
+    return 0;
+}

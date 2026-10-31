@@ -1,0 +1,143 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+void ascending(int a[], int n)
+{
+    int i, j, temp;
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = i + 1; j < n; j++)
+        {
+            if (a[i] > a[j])
+            {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+    }
+}
+
+void descending(int a[], int n)
+{
+    int i, j, temp;
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = i + 1; j < n; j++)
+        {
+            if (a[i] < a[j])
+            {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+    }
+}
+
+int main()
+{
+    int a[] = {5, 2, 8, 1, 9};
+    int n = 5;
+    int pid;
+
+    pid = fork();
+
+    if (pid > 0)
+    {
+        // Parent process
+        ascending(a, n);
+
+        printf("Parent process (Ascending): ");
+        for (int i = 0; i < n; i++)
+            printf("%d ", a[i]);
+
+        printf("\n");
+    }
+    else if (pid == 0)
+    {
+        // Child process
+        descending(a, n);
+
+        printf("Child process (Descending): ");
+        for (int i = 0; i < n; i++)
+            printf("%d ", a[i]);
+
+        printf("\n");
+    }
+    else
+    {
+        printf("Fork failed\n");
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int main()
+{
+    int pid = fork();
+
+    if (pid > 0)
+    {
+        printf("Parent process id: %d\n", getpid());
+        printf("Child process id: %d\n", pid);
+
+        exit(0);   // Parent terminates
+    }
+    else if (pid == 0)
+    {
+        sleep(5);  // Child waits after parent terminates
+
+        printf("Child process id: %d\n", getpid());
+        printf("Parent process id: %d\n", getppid());
+    }
+
+    return 0;
+}
+
+
+
+
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int main()
+{
+    int pid = fork();
+
+    if (pid > 0)
+    {
+        printf("Parent process id: %d\n", getpid());
+        printf("Child process id: %d\n", pid);
+
+        sleep(10);   // Parent stays alive
+        printf("Parent process finished\n");
+    }
+    else if (pid == 0)
+    {
+        printf("Child process id: %d\n", getpid());
+        printf("Child process terminating...\n");
+
+        exit(0);     // Child terminates first
+    }
+
+    return 0;
+}

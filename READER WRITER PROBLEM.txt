@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+sem_t mutex, wrt;
+
+int data = 99;
+int readcount = 0;
+
+void *reader(void *arg)
+{
+    int id = *(int *)arg;
+
+    sem_wait(&mutex);
+    readcount++;
+
+    if (readcount == 1)
+        sem_wait(&wrt);
+
+    sem_post(&mutex);
+
+    printf("Reader %d is reading shared variable = %d\n", id, data);
+
+    sem_wait(&mutex);
+    readcount--;
+
+    if (readcount == 0)
+        sem_post(&wrt);
+
+    sem_post(&mutex);
+
+    return NULL;
+}
+
+void *writer(void *arg)
+{
+    int id = *(int *)arg;
+
+    sem_wait(&wrt);
+
+    printf("Writer %d is writing\n", id);
+    data++;
+    printf("Writer %d changed shared variable to = %d\n", id, data);
+
+    sem_post(&wrt);
+
+    return NULL;
+}
+
+int main()
+{
+    int nr, nw, i;
+    pthread_t readers[20], writers[20];
+    int rid[20], wid[20];
+
+    printf("Enter number of readers: ");
+    scanf("%d", &nr);
+
+    printf("Enter number of writers: ");
+    scanf("%d", &nw);
+
+    sem_init(&mutex, 0, 1);
+    sem_init(&wrt, 0, 1);
+
+    printf("\nInitial shared variable = %d\n\n", data);
+    printf("Execution Sequence:\n");
+
+    for (i = 0; i < nr; i++)
+    {
+        rid[i] = i + 1;
+        pthread_create(&readers[i], NULL, reader, &rid[i]);
+    }
+
+    for (i = 0; i < nw; i++)
+    {
+        wid[i] = i + 1;
+        pthread_create(&writers[i], NULL, writer, &wid[i]);
+    }
+
+    for (i = 0; i < nr; i++)
+        pthread_join(readers[i], NULL);
+
+    for (i = 0; i < nw; i++)
+        pthread_join(writers[i], NULL);
+
+    printf("\nFinal shared variable = %d\n", data);
+
+    sem_destroy(&mutex);
+    sem_destroy(&wrt);
+
+    return 0;
+}
